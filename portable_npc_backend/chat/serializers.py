@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from portable_npc_backend.chat.models import ChatCharacter
+
 
 class ChatMessageSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=["function", "system", "user", "assistant"])
@@ -8,5 +10,12 @@ class ChatMessageSerializer(serializers.Serializer):
 
 class ChatCompletionSerializer(serializers.Serializer):
     messages = ChatMessageSerializer(many=True)
+    name = serializers.CharField()
     context = serializers.CharField()
     openai_api_key = serializers.CharField()
+
+
+class ChatCharacterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatCharacter
+        fields = ("id", "name", "description", "image")
