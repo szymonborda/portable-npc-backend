@@ -1,13 +1,18 @@
-from django.shortcuts import render
+import os
+from django.conf import settings
+import whisper
 from portable_npc_backend.chat import serializers
 from rest_framework.viewsets import GenericViewSet
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from rest_framework.response import Response
-from rest_framework import generics
+from rest_framework import generics, permissions
 import openai
 
 
 class ChatCompletionViewSet(generics.CreateAPIView, GenericViewSet):
     serializer_class = serializers.ChatCompletionSerializer
+    permission_classes = [permissions.AllowAny]
 
     def create(self, request):
         serializer = serializers.ChatCompletionSerializer(data=request.data)
@@ -42,3 +47,32 @@ class ChatCharacterViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class TranscribeViewSet(
+    generics.CreateAPIView,
+    GenericViewSet,
+):
+    serializer_class = serializers.TranscribeSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        audio_model = whisper.load_model(settings.WHISPER_MODEL)
+
+        wav_file = serializer.validated_data["audio"]
+        language = serializer.validated_data["language"]
+        path = default_storage.save("tmp/audio.mp3", ContentFile(wav_file.read()))
+        tmp_file = os.path.join(settings.MEDIA_ROOT, path)
+
+        result = audio_model.transcribe(tmp_file, language=language)
+
+        os.remove(tmp_file)
+
+        return Response(
+            {
+                "message": result["text"],
+            },
+        )

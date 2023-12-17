@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
-    "192.168.1.101",
+    "192.168.0.124",
 ]
 
 
@@ -152,3 +152,5 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+WHISPER_MODEL = "medium"

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from whisper.tokenizer import LANGUAGES
 
 from portable_npc_backend.chat.models import ChatCharacter
 
@@ -17,6 +18,12 @@ class ChatCompletionSerializer(serializers.Serializer):
 
 class ChatCharacterSerializer(serializers.ModelSerializer):
     image = serializers.ImageField(use_url=True, required=False)
+
     class Meta:
         model = ChatCharacter
         fields = ("id", "name", "description", "image")
+
+
+class TranscribeSerializer(serializers.Serializer):
+    audio = serializers.FileField()
+    language = serializers.ChoiceField(choices=list(LANGUAGES.values()))
