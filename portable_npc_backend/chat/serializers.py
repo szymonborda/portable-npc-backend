@@ -16,6 +16,7 @@ class ChatCompletionSerializer(serializers.Serializer):
 
 
 class ChatCharacterSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False)
     class Meta:
         model = ChatCharacter
         fields = ("id", "name", "description", "image")
