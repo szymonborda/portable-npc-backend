@@ -32,3 +32,33 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         user.set_password(validated_data["password"])
         user.save()
         return user
+
+
+class AccountDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+
+    def save(self, **kwargs):
+        return self.instance.delete()
+
+
+class ChangePasswordSerializer(serializers.ModelSerializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    class Meta:
+        model = Account
+        fields = ("old_password", "new_password")
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate_old_password(self, value):
+        if not self.instance.check_password(value):
+            raise serializers.ValidationError("Incorrect old password.")
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data["new_password"])
+        instance.save()
+        return instance
